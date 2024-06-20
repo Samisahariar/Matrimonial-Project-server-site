@@ -4,6 +4,7 @@ const PORT = process.env.DB_PORT || 5000;
 const cors = require("cors");
 const { MongoClient, ServerApiVersion } = require('mongodb');
 require("dotenv").config()
+const jwt = require('jsonwebtoken');
 
 //middlewares
 app.use(cors());
@@ -29,12 +30,27 @@ async function run() {
     //await client.connect();
     // Send a ping to confirm a successful connection
 
-    
+    app.post("jwt", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.DB_ACESS_TOKEN, { expiresIn: '1h' });
+      res.send({ token });
+    })
 
-
-
-
-
+    //middlewares
+    const verifyToken = (req, res, next) => {
+      // console.log('inside verify token', req.headers.authorization);
+      if (!req.headers.authorization) {
+        return res.status(401).send({ message: 'unauthorized access' });
+      }
+      const token = req.headers.authorization.split(' ')[1];
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+          return res.status(401).send({ message: 'unauthorized access' })
+        }
+        req.decoded = decoded;
+        next();
+      })
+    }
 
 
 
@@ -59,9 +75,9 @@ run().catch(console.dir);
 
 
 app.get("/", async (req, res) => {
-    res.send("the assignment is firing on backend server")
+  res.send("the assignment is firing on backend server")
 })
 
 app.listen(PORT, () => {
-    console.log(`the server is running at the ${PORT}`)
+  console.log(`the server is running at the ${PORT}`)
 })
