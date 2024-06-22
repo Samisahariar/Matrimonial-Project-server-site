@@ -93,10 +93,44 @@ async function run() {
       const loggedUser = req.body;
       res.clearCookie('token', { ...cookieOptions, maxAge: 0 }).send({ message: "cookie clear successful" })
     })
+
+
+
     //biodata premium
-    app.post("/premium/:email", async(req, res) => {
+    app.post("/premium/:email", async (req, res) => {
       const email = req.params.email;
-      
+      const filter = { email: email }
+      const updatedDoc = {
+        $set: {
+          customer: 'pending'
+        }
+      };
+
+      const result = await biodataCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+
+    })
+
+    app.patch("/premium/:email", async (req, res) => {
+      const email = req.params.email;
+      const filter = { email: email }
+      const updatedDoc = {
+        $set: {
+          customer: 'premium'
+        }
+      };
+
+      const result = await biodataCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+
+    })
+
+
+    //biodata approved premium 
+    app.get("/pending", verifyToken, async (req, res) => {
+      const query = { customer: "pending" }
+      const allthebiodata = await biodataCollection.find(query).toArray();
+      res.send(allthebiodata)
     })
 
 
@@ -211,7 +245,8 @@ async function run() {
           image: isThereAnyBiodata.image
         }
       };
-      const result = await userCollection.updateOne(query, updateDoc);
+      const filter = { email: biodatainfo.email };
+      const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
 
