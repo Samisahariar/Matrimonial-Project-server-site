@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = process.env.DB_PORT || 5000;
 const cors = require("cors");
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require("dotenv").config()
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
@@ -113,6 +113,19 @@ async function run() {
     app.get("/users", verifyToken,  async (req, res) => {
       const users = await userCollection.find().toArray()
       res.send(users)
+    })
+
+
+    app.patch('/users/admin/:id', verifyToken, async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          role: 'admin'
+        }
+      }
+      const result = await userCollection.updateOne(filter, updatedDoc);
+      res.send(result);
     })
 
 
