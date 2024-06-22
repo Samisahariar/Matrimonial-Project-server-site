@@ -44,7 +44,7 @@ const verifyToken = (req, res, next) => {
   if (!token) {
     return res.status(401).send({ message: 'unauthorized' })
   };
-  jwt.verify(token, process.env.DB_ACESS_TOKEN , (err, decoded) => {
+  jwt.verify(token, process.env.DB_ACESS_TOKEN, (err, decoded) => {
     if (err) {
       return res.status(401).send({ message: 'unauthorized access' })
     }
@@ -75,8 +75,7 @@ async function run() {
 
     //ALl of the collection is here below the table : 
     const userCollection = client.db("assignment12").collection("users")
-
-
+    const biodataCollection = client.db("assignment12").collection("biodatas")
 
 
 
@@ -110,7 +109,7 @@ async function run() {
     });
 
 
-    app.get("/users", verifyToken,  async (req, res) => {
+    app.get("/users", verifyToken, async (req, res) => {
       const users = await userCollection.find().toArray()
       res.send(users)
     })
@@ -144,9 +143,6 @@ async function run() {
       }
       res.send({ admin });
     })
-
-
-
     app.patch('/users/premium/:id', verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -158,6 +154,61 @@ async function run() {
       const result = await userCollection.updateOne(filter, updatedDoc);
       res.send(result);
     })
+    //bioaqqqqqq666re;/e]=3wdata related apis
+    app.get("/biodatas/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const isThereAnyBiodata = await biodataCollection.findOne(query);
+      if (isThereAnyBiodata) {
+        res.send({ avail: true })
+      } else {
+        res.send({ avail: false })
+      }
+    })
+
+
+
+    app.patch("/biodatas/update", async (req, res) => {
+      const biodatainfo = req.body;
+      const query = { email: biodatainfo.email };
+      const isThereAnyBiodata = await biodataCollection.findOne(query);
+      const updateDoc = {
+        $set: {
+          name: isThereAnyBiodata.name,
+          height: isThereAnyBiodata.height,
+          weight: isThereAnyBiodata.weight,
+          exweight: isThereAnyBiodata.exweight,
+          exheight: isThereAnyBiodata.exheight,
+          email: isThereAnyBiodata.email,
+          age: isThereAnyBiodata.age,
+          exage: isThereAnyBiodata.exage,
+          bddate: isThereAnyBiodata.bddate,
+          race: isThereAnyBiodata.race,
+          occupation: isThereAnyBiodata.occupation,
+          permanentdiv: isThereAnyBiodata.permanentdiv,
+          presentdiv: isThereAnyBiodata.presentdiv,
+          number: isThereAnyBiodata.number,
+          fathersname: isThereAnyBiodata.fathersname,
+          mothersname: isThereAnyBiodata.mothersname,
+          gender: isThereAnyBiodata.gender,
+          image: isThereAnyBiodata.image
+        }
+      };
+      const result = await userCollection.updateOne(query, updateDoc);
+      res.send(result);
+    });
+
+
+    app.post("/biodatas/create", async (req, res) => {
+      const biodatainfo = req.body;
+      const previosCollection = await biodataCollection.find().toArray();
+      const biodataId = previosCollection.length + 1
+      const newbiodata = { ...biodatainfo, biodataId }
+      const result = await biodataCollection.insertOne(newbiodata)
+      res.send(result)
+    });
+
+
 
 
     await client.db("admin").command({ ping: 1 });
