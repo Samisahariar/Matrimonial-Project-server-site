@@ -93,6 +93,14 @@ async function run() {
       const loggedUser = req.body;
       res.clearCookie('token', { ...cookieOptions, maxAge: 0 }).send({ message: "cookie clear successful" })
     })
+    //biodata premium
+    app.post("/premium/:email", async(req, res) => {
+      const email = req.params.email;
+      
+    })
+
+
+
 
 
     //users collection is here and all of the user is processed here
@@ -154,6 +162,8 @@ async function run() {
       const result = await userCollection.updateOne(filter, updatedDoc);
       res.send(result);
     })
+
+
     //bioaqqqqqq666re;/e]=3wdata related apis
     app.get("/biodatas/:email", async (req, res) => {
       const email = req.params.email;
@@ -164,6 +174,13 @@ async function run() {
       } else {
         res.send({ avail: false })
       }
+    })
+
+    app.get("/biodata/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const isThereAnyBiodata = await biodataCollection.findOne(query);
+      res.send(isThereAnyBiodata)
     })
 
 
@@ -207,8 +224,6 @@ async function run() {
       const result = await biodataCollection.insertOne(newbiodata)
       res.send(result)
     });
-
-
 
 
     await client.db("admin").command({ ping: 1 });
