@@ -159,17 +159,16 @@ async function run() {
       const premiumdatas = []
       const users = await userCollection.find({ customer: { $eq: "premium" } }).toArray();
       const biodatas = await biodataCollection.find().toArray();
-      users?.map((singledata) => {
-        biodatas?.map((singlebiodata) => {
-
-          if (singledata.email === singlebiodata.email) {
-            console.log("match found in here the singledata")
+      const premiumbiodatas = biodatas.filter(singledata => {
+        for (const user of users) {
+          console.log(user)
+          if (user.email === singledata.email) {
+            return singledata
           }
-
-
-          
-        })
+        }
       })
+      res.send(premiumbiodatas)
+
 
     })
 
