@@ -1,16 +1,16 @@
+require("dotenv").config()
 const express = require("express");
 const app = express();
 const PORT = process.env.DB_PORT || 5000;
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-require("dotenv").config()
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 
 
 //middlewares
 app.use(cors({
-  origin: ["http://localhost:5173"],
+  origin: ["http://localhost:5173", "https://genuine-brioche-5d3e32.netlify.app"],
   credentials: true
 }));
 app.use(express.json());
@@ -82,7 +82,7 @@ async function run() {
     //token related
     app.post("/jwt", async (req, res) => {
       const user = req.body;
-      const token = jwt.sign(user, process.env.DB_ACESS_TOKEN, { expiresIn: '1h' });
+      const token = jwt.sign(user, process.env.DB_ACESS_TOKEN);
       res
         .cookie('token', token, cookieOptions)
         .send({ success: true })
@@ -122,7 +122,6 @@ async function run() {
 
       const result = await biodataCollection.updateOne(filter, updatedDoc);
       res.send(result);
-
     })
 
 
@@ -151,10 +150,29 @@ async function run() {
     });
 
 
-    app.get("/users", verifyToken, async (req, res) => {
-      const users = await userCollection.find().toArray()
+    app.get("/users", async (req, res) => {
+      const users = await userCollection.find().toArray();
       res.send(users)
     })
+
+    app.get("/users/premium", async (req, res) => {
+      const premiumdatas = []
+      const users = await userCollection.find({ customer: { $eq: "premium" } }).toArray();
+      const biodatas = await biodataCollection.find().toArray();
+      users?.map((singledata) => {
+        biodatas?.map((singlebiodata) => {
+
+          if (singledata.email === singlebiodata.email) {
+            console.log("match found in here the singledata")
+          }
+
+
+          
+        })
+      })
+
+    })
+
 
 
     app.patch('/users/admin/:id', verifyToken, async (req, res) => {
@@ -197,8 +215,13 @@ async function run() {
       res.send(result);
     })
 
+    //allbiodata related api
+    app.get("/biodatas", async (req, res) => {
+      const result = await biodataCollection.find().toArray();
+      res.send(result)
+    });
 
-    //bioaqqqqqq666re;/e]=3wdata related apis
+
     app.get("/biodatas/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
@@ -208,13 +231,20 @@ async function run() {
       } else {
         res.send({ avail: false })
       }
-    })
+    });
 
     app.get("/biodata/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const isThereAnyBiodata = await biodataCollection.findOne(query);
       res.send(isThereAnyBiodata)
+    })
+    //single biodata page
+    app.get("/singleDetails/:biodataId", async (req, res) => {
+      const biodataId = req.params.biodataId;
+      const query = { biodataId: parseInt(biodataId) };
+      const result = await biodataCollection.findOne(query);
+      res.send(result);
     })
 
 
@@ -261,7 +291,7 @@ async function run() {
     });
 
 
-    await client.db("admin").command({ ping: 1 });
+    //await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
