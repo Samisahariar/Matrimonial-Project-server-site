@@ -65,8 +65,6 @@ const verifyAdmin = async (req, res, next) => {
 }
 
 
-
-
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -132,10 +130,6 @@ async function run() {
       res.send(allthebiodata)
     })
 
-
-
-
-
     //users collection is here and all of the user is processed here
 
     app.post('/users', async (req, res) => {
@@ -172,8 +166,6 @@ async function run() {
 
     })
 
-
-
     app.patch('/users/admin/:id', verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -186,22 +178,21 @@ async function run() {
       res.send(result);
     })
 
-
     app.get('/users/admin/:email', verifyToken, async (req, res) => {
       const email = req.params.email;
       console.log(req.decoded.email)
       if (email !== req.decoded.email) {
         return res.status(403).send({ message: 'forbidden access' })
       }
-
       const query = { email: email };
       const user = await userCollection.findOne(query);
-      let admin = false;
+      let admin = true;
       if (user) {
         admin = user?.role === 'admin';
       }
       res.send({ admin });
     })
+
     app.patch('/users/premium/:id', verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
@@ -219,7 +210,6 @@ async function run() {
       const result = await biodataCollection.find().toArray();
       res.send(result)
     });
-
 
     app.get("/biodatas/:email", async (req, res) => {
       const email = req.params.email;
@@ -245,8 +235,6 @@ async function run() {
       const result = await biodataCollection.findOne(query);
       res.send(result);
     })
-
-
 
     app.patch("/biodatas/update", async (req, res) => {
       const biodatainfo = req.body;
@@ -279,7 +267,6 @@ async function run() {
       res.send(result);
     });
 
-
     app.post("/biodatas/create", async (req, res) => {
       const biodatainfo = req.body;
       const previosCollection = await biodataCollection.find().toArray();
@@ -288,8 +275,6 @@ async function run() {
       const result = await biodataCollection.insertOne(newbiodata)
       res.send(result)
     });
-
-
     //await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
