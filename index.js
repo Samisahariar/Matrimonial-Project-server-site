@@ -153,18 +153,22 @@ async function run() {
       const premiumdatas = []
       const users = await userCollection.find({ customer: { $eq: "premium" } }).toArray();
       const biodatas = await biodataCollection.find().toArray();
-      const premiumbiodatas = biodatas.filter(singledata => {
-        for (const user of users) {
-          console.log(user)
-          if (user.email === singledata.email) {
-            return singledata
+      if(users && biodatas){
+        const premiumbiodatas = biodatas.filter(singledata => {
+          for (const user of users) {
+            if (user.email === singledata.email) {
+              return singledata
+            }
           }
-        }
-      })
-      res.send(premiumbiodatas)
-
-
+        })
+        console.log(premiumbiodatas)
+      }
+      
+      
+      
+     /*  res.send(premiumbiodatas)  */
     })
+
 
     app.patch('/users/admin/:id', verifyToken, async (req, res) => {
       const id = req.params.id;
