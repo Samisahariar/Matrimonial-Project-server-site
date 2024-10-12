@@ -153,7 +153,7 @@ async function run() {
       const premiumdatas = []
       const users = await userCollection.find({ customer: { $eq: "premium" } }).toArray();
       const biodatas = await biodataCollection.find().toArray();
-      if(users && biodatas){
+      if (users && biodatas) {
         const premiumbiodatas = biodatas.filter(singledata => {
           for (const user of users) {
             if (user.email === singledata.email) {
@@ -161,12 +161,9 @@ async function run() {
             }
           }
         })
-        console.log(premiumbiodatas)
+        res.send(premiumbiodatas)
       }
-      
-      
-      
-     /*  res.send(premiumbiodatas)  */
+
     })
 
 
